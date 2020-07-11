@@ -1,35 +1,48 @@
-.app {
+.container {
+  display: flex;
+  height: 640px;
   background: #f7f7f7;
 }
 
-.container {
-  display: block;
-  overflow-x: scroll;
-  white-space: nowrap;
-}
-
-.card {
+.column {
   display: inline-block;
-  vertical-align: middle;
-  height: 800px;
-  width: 200px;
-  margin: 0 10px;
-  padding: 5px;
-  margin-right: 5px;
-  white-space: normal;
+  width: 292px;
+  height: 640px;
 }
 
-.cardTitle {
+.columnTitle {
+  color: #383838;
   font-size: 14px;
   font-weight: 600;
   line-height: 40px;
-  cursor: move;
+  margin: 0 10px;
 }
 
-.task {
-  background: #ffffff;
+.columnContent {
+  height: 600px;
+  overflow: auto;
+}
+
+.columnContentActive {
+  overflow: auto;
+  height: 600px;
+  background: #ccecff;
+  border: 2px solid #1b9aee;
+}
+
+.issue {
+  position: relative;
+  min-height: 20px;
   padding: 14px 44px;
-  font-size: 14px;
-  color: #383838;
-  margin-bottom: 8px;
+  background: #ffffff;
+  margin: 8px 10px;
+}
+
+.issueDragging {
+  position: relative;
+  min-height: 20px;
+  padding: 14px 44px;
+  background: #ffffff;
+  opacity: 0.9;
+  margin: 8px 10px;
 }
