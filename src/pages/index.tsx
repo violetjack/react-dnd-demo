@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   DragDropContext,
   Droppable,
@@ -6,6 +6,7 @@ import {
   DropResult,
   DraggableProvided,
   DraggableStateSnapshot,
+  DragUpdate,
 } from 'react-beautiful-dnd';
 import update from 'immutability-helper';
 import styles from './index.less';
@@ -17,10 +18,12 @@ interface initialDataInferface {
     id: number;
     name: string;
   }[];
+  acceptIds: number[];
 }
 
 interface ColumnProps {
   columnIndex: number;
+  activeColumn: initialDataInferface | null;
   column: initialDataInferface;
 }
 
@@ -39,6 +42,7 @@ const InitialData: initialDataInferface[] = [
       { id: 2, name: '睡觉' },
       { id: 3, name: '打豆豆' },
     ],
+    acceptIds: [200],
   },
   {
     id: 200,
@@ -47,13 +51,19 @@ const InitialData: initialDataInferface[] = [
       { id: 4, name: '删库' },
       { id: 5, name: '跑路' },
     ],
+    acceptIds: [300],
   },
   {
     id: 300,
     name: 'done',
     issues: [],
+    acceptIds: [100, 200],
   },
 ];
+
+for (let i = 6; i < 100; i++) {
+  InitialData[0].issues.push({ id: i, name: `uten${i}` });
+}
 
 const Issue = (props: IssueProps) => {
   const { id, issueIndex, name } = props;
@@ -75,14 +85,23 @@ const Issue = (props: IssueProps) => {
 };
 
 const Column = (props: ColumnProps) => {
-  const { columnIndex, column } = props;
-  const { issues } = column;
+  const { columnIndex, activeColumn, column } = props;
+  const { id, issues } = column;
+
   return (
     <div className={styles.column}>
       <div className={styles.columnTitle}>
         {column.name}({column.issues.length})
       </div>
-      <Droppable droppableId={`${columnIndex}`}>
+      <Droppable
+        droppableId={`${columnIndex}`}
+        mode="virtual"
+        isDropDisabled={
+          activeColumn
+            ? !(activeColumn.acceptIds.includes(id) || id === activeColumn.id)
+            : true
+        }
+      >
         {(provided, snapshot) => (
           <div
             ref={provided.innerRef}
@@ -111,6 +130,16 @@ const Column = (props: ColumnProps) => {
 
 export default () => {
   const [data, setData] = useState(InitialData);
+  const [activeColumn, setActiveColumn] = useState<initialDataInferface | null>(
+    null,
+  );
+
+  const onDragStart = (result: DragUpdate) => {
+    const { source } = result;
+    const columnIndex = Number(source.droppableId);
+
+    setActiveColumn(data[columnIndex]);
+  };
 
   const onDragEnd = (result: DropResult) => {
     const { destination, source } = result;
@@ -122,9 +151,6 @@ export default () => {
     const fromIssueIndex = source.index;
     const toColumnIndex = Number(destination.droppableId);
     const toIssueIndex = destination.index;
-
-    console.log(fromColumnIndex, fromIssueIndex);
-    console.log(toColumnIndex, toIssueIndex);
 
     const TempIssue = data[fromColumnIndex].issues[fromIssueIndex];
 
@@ -147,13 +173,21 @@ export default () => {
     });
 
     setData(TempData);
+    setActiveColumn(null);
   };
 
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
+    <DragDropContext onDragEnd={onDragEnd} onDragStart={onDragStart}>
       <div className={styles.container}>
         {data.map((column, index) => {
-          return <Column columnIndex={index} key={column.id} column={column} />;
+          return (
+            <Column
+              columnIndex={index}
+              key={column.id}
+              activeColumn={activeColumn}
+              column={column}
+            />
+          );
         })}
       </div>
     </DragDropContext>
